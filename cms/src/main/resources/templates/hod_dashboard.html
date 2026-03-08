@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>HOD Dashboard – CMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --dark: #040f1f; --dark2: #071829; --blue: #1a4a7a; --cyan: #22d3ee;
+            --cyan-soft: rgba(34,211,238,0.15); --text-muted: #7a9bb5; --white: #fff;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--dark); min-height: 100vh; color: var(--white); }
+        .bg-pattern { position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 80% 10%, rgba(34,211,238,0.06) 0%, transparent 60%),
+            linear-gradient(160deg, #040f1f 0%, #071829 50%, #040f1f 100%); }
+        .bg-grid { position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(34,211,238,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.03) 1px, transparent 1px);
+            background-size: 50px 50px; }
+
+        nav { position: relative; z-index: 10; background: rgba(7,24,41,0.95); border-bottom: 1px solid rgba(34,211,238,0.12); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 64px; backdrop-filter: blur(20px); }
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .nav-icon { width: 36px; height: 36px; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .nav-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+        .nav-subtitle { font-size: 0.72rem; color: var(--text-muted); }
+        .btn-logout { background: rgba(220,53,69,0.12); border: 1px solid rgba(220,53,69,0.25); color: #ff8a8a; padding: 8px 18px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { background: rgba(220,53,69,0.22); }
+
+        .main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+        .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; animation: fadeUp 0.5s ease both; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+        .page-title span { color: var(--cyan); }
+
+        /* Search bar */
+        .search-form { display: flex; gap: 10px; animation: fadeUp 0.5s 0.1s ease both; margin-bottom: 28px; }
+        .search-input { flex: 1; max-width: 360px; padding: 11px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(34,211,238,0.15); border-radius: 10px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .search-input::placeholder { color: rgba(255,255,255,0.25); }
+        .search-input:focus { border-color: rgba(34,211,238,0.4); }
+        .btn-search { padding: 11px 22px; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.3); color: var(--cyan); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-search:hover { background: rgba(34,211,238,0.2); }
+
+        /* Table */
+        .table-wrap { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; animation: fadeUp 0.5s 0.2s ease both; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        thead tr { background: rgba(34,211,238,0.06); border-bottom: 1px solid rgba(34,211,238,0.12); }
+        th { padding: 14px 16px; text-align: left; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); white-space: nowrap; }
+        td { padding: 14px 16px; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(34,211,238,0.03); }
+
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 500; }
+        .status-pending { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+        .status-solved { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+        .status-rejected { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+
+        .action-form { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
+        .remarks-input { padding: 7px 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; outline: none; width: 100%; }
+        .remarks-input:focus { border-color: rgba(34,211,238,0.3); }
+        .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-solve { padding: 6px 12px; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-solve:hover { background: rgba(74,222,128,0.22); }
+        .btn-reject { padding: 6px 12px; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.25); color: #f87171; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-reject:hover { background: rgba(248,113,113,0.22); }
+        .btn-delete { display: inline-block; margin-top: 4px; padding: 5px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 6px; font-size: 0.75rem; text-decoration: none; transition: all 0.2s; }
+        .btn-delete:hover { border-color: rgba(248,113,113,0.3); color: #f87171; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<nav>
+    <div class="nav-brand">
+        <div class="nav-icon">🏛️</div>
+        <div>
+            <div class="nav-title">HOD Dashboard</div>
+            <div class="nav-subtitle">Sir C R Reddy College for Women</div>
+        </div>
+    </div>
+    <form action="/logout" method="post">
+        <button type="submit" class="btn-logout">⬡ Logout</button>
+    </form>
+</nav>
+
+<div class="main">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Complaint <span>Management</span></h1>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">Review, resolve and manage student grievances</p>
+        </div>
+    </div>
+
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="rollNumber" class="search-input" placeholder="🔍  Search by Roll Number...">
+        <button type="submit" class="btn-search">Search</button>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#ID</th>
+                    <th>Student Name</th>
+                    <th>Roll No.</th>
+                    <th>Complaint</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="c : ${complaints}">
+                    <td th:text="${c.id}" style="color:var(--text-muted); font-size:0.78rem;"></td>
+                    <td th:text="${c.studentName}" style="font-weight:500;"></td>
+                    <td th:text="${c.rollNumber}" style="font-family:monospace; color:var(--cyan); font-size:0.82rem;"></td>
+                    <td th:text="${c.complaintText}" style="max-width:220px; color:rgba(255,255,255,0.75);"></td>
+                    <td>
+                        <span th:classappend="${c.status == 'Solved'} ? 'status-solved' : (${c.status == 'Rejected'} ? 'status-rejected' : 'status-pending')"
+                              class="status-badge" th:text="${c.status}"></span>
+                    </td>
+                    <td th:text="${c.remarks}" style="color:var(--text-muted); font-size:0.82rem;"></td>
+                    <td>
+                        <form th:action="@{/updateStatus}" method="post" class="action-form">
+                            <input type="hidden" name="id" th:value="${c.id}">
+                            <input type="text" name="remarks" placeholder="Enter remarks..." class="remarks-input">
+                            <div class="btn-row">
+                                <button type="submit" name="status" value="Solved" class="btn-solve">✓ Solve</button>
+                                <button type="submit" name="status" value="Rejected" class="btn-reject">✕ Reject</button>
+                            </div>
+                        </form>
+                        <a th:href="@{/delete/{id}(id=${c.id})}" class="btn-delete">🗑 Delete</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(complaints)}">
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="emoji">📭</div>
+                            <div>No complaints found</div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

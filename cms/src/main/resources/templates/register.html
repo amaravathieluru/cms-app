@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Registration – CMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --dark: #071a0f; --green: #1a7a4a; --accent: #4ade80;
+            --text-muted: #7aab8a; --white: #fff;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--dark); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--white); padding: 40px 20px; }
+        .bg-pattern { position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(46,204,113,0.08) 0%, transparent 60%),
+            linear-gradient(160deg, #071a0f 0%, #0d2818 50%, #071a0f 100%); }
+        .bg-grid { position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(46,204,113,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(46,204,113,0.04) 1px, transparent 1px);
+            background-size: 50px 50px; }
+
+        .card {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(74,222,128,0.18);
+            border-radius: 24px; padding: 44px 40px; width: 100%; max-width: 560px;
+            backdrop-filter: blur(20px); box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            animation: fadeUp 0.6s ease both;
+        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+        .icon-wrap { width: 56px; height: 56px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.28); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 20px; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 1.7rem; text-align: center; margin-bottom: 6px; }
+        .subtitle { text-align: center; color: var(--text-muted); font-size: 0.84rem; margin-bottom: 10px; }
+        .divider { width: 40px; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 0 auto 28px; }
+
+        .error-msg { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: #f87171; border-radius: 10px; padding: 11px 14px; font-size: 0.82rem; margin-bottom: 20px; text-align: center; }
+        .success-msg { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; border-radius: 10px; padding: 11px 14px; font-size: 0.82rem; margin-bottom: 20px; text-align: center; }
+
+        /* Two column grid */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .full-width { grid-column: 1 / -1; }
+
+        .field { display: flex; flex-direction: column; }
+        label { font-size: 0.73rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+
+        .input-wrap { position: relative; }
+        .input-wrap .ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.4; pointer-events: none; }
+
+        input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%; padding: 12px 12px 12px 38px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px; color: var(--white); font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+        input::placeholder { color: rgba(255,255,255,0.2); }
+        input:focus, select:focus {
+            border-color: rgba(74,222,128,0.4);
+            box-shadow: 0 0 0 3px rgba(74,222,128,0.07);
+            background: rgba(255,255,255,0.07);
+        }
+        select option { background: #0d2818; color: var(--white); }
+
+        .section-label { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(74,222,128,0.6); margin: 20px 0 14px; padding-bottom: 6px; border-bottom: 1px solid rgba(74,222,128,0.1); grid-column: 1 / -1; }
+
+        .btn-register {
+            width: 100%; padding: 14px; margin-top: 24px;
+            background: linear-gradient(135deg, #1a7a4a, #4ade80);
+            border: none; border-radius: 10px; color: #071a0f;
+            font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s;
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(74,222,128,0.25); }
+
+        .login-link { display: block; text-align: center; margin-top: 18px; color: var(--text-muted); font-size: 0.83rem; position: relative; z-index: 1; }
+        .login-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .login-link a:hover { text-decoration: underline; }
+
+        @media(max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .card { padding: 32px 24px; } }
+    </style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<div class="card">
+    <div class="icon-wrap">🎓</div>
+    <h2>Student Registration</h2>
+    <p class="subtitle">Create your account to submit and track complaints</p>
+    <div class="divider"></div>
+
+    <!-- Error message -->
+    <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+
+    <!-- Success message after redirect -->
+    <div th:if="${param.registered}" class="success-msg">✅ Registration successful! Please login.</div>
+
+    <form th:action="@{/register}" th:object="${student}" method="post">
+
+        <div class="form-grid">
+
+            <!-- Personal Info -->
+            <div class="section-label">👤 Personal Information</div>
+
+            <div class="field full-width">
+                <label>Full Name</label>
+                <div class="input-wrap">
+                    <span class="ico">👤</span>
+                    <input type="text" th:field="*{name}" placeholder="Enter your full name" required />
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Roll Number</label>
+                <div class="input-wrap">
+                    <span class="ico">🎓</span>
+                    <input type="text" th:field="*{rollNumber}" placeholder="e.g. 22BC1A0501" required />
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Phone Number</label>
+                <div class="input-wrap">
+                    <span class="ico">📱</span>
+                    <input type="text" th:field="*{phone}" placeholder="10-digit number" required />
+                </div>
+            </div>
+
+            <div class="field full-width">
+                <label>Email Address</label>
+                <div class="input-wrap">
+                    <span class="ico">📧</span>
+                    <input type="email" th:field="*{email}" placeholder="yourname@email.com" required />
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Department</label>
+                <div class="input-wrap">
+                    <span class="ico">🏛️</span>
+                    <select th:field="*{department}" required>
+                        <option value="">Select Department</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Commerce">Commerce</option>
+                        <option value="English">English</option>
+                        <option value="Telugu">Telugu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Year / Semester</label>
+                <div class="input-wrap">
+                    <span class="ico">📅</span>
+                    <select th:field="*{semester}" required>
+                        <option value="">Select Semester</option>
+                        <option value="1st Year - Sem 1">1st Year - Sem 1</option>
+                        <option value="1st Year - Sem 2">1st Year - Sem 2</option>
+                        <option value="2nd Year - Sem 3">2nd Year - Sem 3</option>
+                        <option value="2nd Year - Sem 4">2nd Year - Sem 4</option>
+                        <option value="3rd Year - Sem 5">3rd Year - Sem 5</option>
+                        <option value="3rd Year - Sem 6">3rd Year - Sem 6</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Login Credentials -->
+            <div class="section-label">🔐 Login Credentials</div>
+
+            <div class="field">
+                <label>Username</label>
+                <div class="input-wrap">
+                    <span class="ico">👤</span>
+                    <input type="text" th:field="*{username}" placeholder="Choose a username" required />
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <span class="ico">🔑</span>
+                    <input type="password" th:field="*{password}" placeholder="Min 6 characters" required minlength="6" />
+                </div>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-register">Create Account →</button>
+    </form>
+</div>
+
+<p class="login-link">Already have an account? <a href="/login">Sign in here</a></p>
+
+</body>
+</html>

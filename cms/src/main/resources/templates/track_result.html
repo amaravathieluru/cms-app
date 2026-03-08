@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Complaint Status – CMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: #0a1628; min-height: 100vh; color: #fff; }
+        .bg-pattern { position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 30% 20%, rgba(201,168,76,0.07) 0%, transparent 60%),
+            linear-gradient(160deg, #0a1628 0%, #0d1e3a 50%, #0a1628 100%); }
+        .bg-grid { position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+            background-size: 60px 60px; }
+
+        .main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 56px 24px; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        .page-header { text-align: center; margin-bottom: 40px; animation: fadeUp 0.5s ease both; }
+        .icon-wrap { width: 56px; height: 56px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 20px; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 6px; }
+        h2 span { color: #c9a84c; }
+        .subtitle { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+        .divider { width: 40px; height: 2px; background: linear-gradient(90deg, transparent, #c9a84c, transparent); margin: 20px auto 0; }
+
+        /* Table */
+        .table-wrap { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.1); border-radius: 18px; overflow: hidden; animation: fadeUp 0.5s 0.15s ease both; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        thead tr { background: rgba(201,168,76,0.06); border-bottom: 1px solid rgba(201,168,76,0.12); }
+        th { padding: 14px 20px; text-align: left; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #c9a84c; white-space: nowrap; }
+        td { padding: 16px 20px; font-size: 0.88rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(201,168,76,0.02); }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 500; }
+        .status-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.22); }
+        .status-solved { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.22); }
+        .status-rejected { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.22); }
+        .status-approved { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.22); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
+        .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+
+        /* Bottom links */
+        .bottom-links { display: flex; justify-content: center; gap: 16px; margin-top: 32px; flex-wrap: wrap; animation: fadeUp 0.5s 0.3s ease both; }
+        .btn-link { padding: 11px 24px; border-radius: 10px; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+        .btn-gold { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); color: #c9a84c; }
+        .btn-gold:hover { background: rgba(201,168,76,0.18); transform: translateY(-2px); }
+        .btn-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+    </style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<div class="main">
+    <div class="page-header">
+        <div class="icon-wrap">📊</div>
+        <h2>Complaint <span>Status</span></h2>
+        <p class="subtitle">Live status of your submitted complaints</p>
+        <div class="divider"></div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#ID</th>
+                    <th>Complaint Details</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="c : ${complaints}">
+                    <td th:text="${c.id}" style="color:rgba(255,255,255,0.35); font-size:0.78rem; font-family:monospace;"></td>
+                    <td th:text="${c.complaintText}" style="max-width:300px; color:rgba(255,255,255,0.8);"></td>
+                    <td>
+                        <span th:classappend="${c.status == 'Solved' or c.status == 'Approved'} ? 'status-solved' : (${c.status == 'Rejected'} ? 'status-rejected' : 'status-pending')"
+                              class="status-badge" th:text="${c.status}"></span>
+                    </td>
+                    <td th:text="${c.remarks}" style="color:rgba(255,255,255,0.45); font-size:0.82rem;"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(complaints)}">
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <div class="emoji">📭</div>
+                            <div>No complaints found for this roll number</div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bottom-links">
+        <a href="/complaint" class="btn-link btn-gold">📝 Submit New Complaint</a>
+        <a href="/track" class="btn-link btn-ghost">🔍 Search Again</a>
+        <a href="/" class="btn-link btn-ghost">← Home</a>
+    </div>
+</div>
+</body>
+</html>

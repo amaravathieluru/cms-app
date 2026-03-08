@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login – CMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --navy: #0a1628; --gold: #c9a84c; --gold-light: #e8c96e;
+            --text-muted: #8a9bb5; --white: #fff;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--navy); min-height: 100vh; display: flex; flex-direction: column; color: var(--white); }
+        .bg-pattern { position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.08) 0%, transparent 60%),
+            linear-gradient(160deg, #0a1628 0%, #0d1e3a 50%, #0a1628 100%); }
+        .bg-grid { position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+            background-size: 60px 60px; }
+
+        .college-header { position: relative; z-index: 2; background: rgba(255,255,255,0.97); box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
+        .college-header img { width: 100%; max-height: 100px; object-fit: contain; display: block; }
+
+        .page-center { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+
+        .login-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 24px; padding: 48px 40px; width: 100%; max-width: 420px;
+            backdrop-filter: blur(20px); box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            animation: fadeUp 0.6s ease both;
+        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+        .lock-icon { width: 56px; height: 56px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 24px; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; text-align: center; margin-bottom: 6px; }
+        .subtitle { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; }
+        .divider { width: 40px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 0 auto 28px; }
+
+        label { display: block; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+        .input-wrap { position: relative; margin-bottom: 20px; }
+        .input-wrap span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.5; }
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 13px 14px 13px 40px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white);
+            font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input::placeholder { color: rgba(255,255,255,0.25); }
+        input:focus { border-color: rgba(201,168,76,0.5); box-shadow: 0 0 0 3px rgba(201,168,76,0.08); }
+
+        .error-msg { background: rgba(220,53,69,0.12); border: 1px solid rgba(220,53,69,0.3); color: #ff8a8a; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; margin-bottom: 20px; text-align: center; }
+        .success-msg { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; margin-bottom: 20px; text-align: center; }
+
+        .btn-login {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border: none; border-radius: 10px; color: #1a1200; font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; letter-spacing: 0.05em;
+            transition: transform 0.2s, box-shadow 0.2s; margin-top: 8px;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
+
+        .register-btn {
+            display: block; width: 100%; padding: 13px; margin-top: 12px;
+            background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.25);
+            border-radius: 10px; color: var(--gold-light); font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem; font-weight: 500; text-align: center; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .register-btn:hover { background: rgba(201,168,76,0.15); transform: translateY(-2px); }
+
+        .back-link { display: block; text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 0.82rem; text-decoration: none; transition: color 0.2s; }
+        .back-link:hover { color: var(--gold-light); }
+
+        .footer { position: relative; z-index: 1; text-align: center; padding: 16px; color: rgba(138,155,181,0.4); font-size: 0.72rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<!-- College Header -->
+<div class="college-header">
+    <img th:src="@{/images/reddywomenslogo.JPG}" src="/images/reddywomenslogo.JPG" alt="Sir C R Reddy College for Women">
+</div>
+
+<!-- Login Card -->
+<div class="page-center">
+    <div class="login-card">
+
+        <div class="lock-icon">🔐</div>
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Sign in to access your portal</p>
+        <div class="divider"></div>
+
+        <!-- Error message -->
+        <div th:if="${param.error}" class="error-msg">⚠ Invalid username or password. Please try again.</div>
+
+        <!-- Success message after registration -->
+        <div th:if="${param.registered}" class="success-msg">✅ Registration successful! Please login.</div>
+
+        <!-- Success message after password reset -->
+        <div th:if="${param.passwordReset}" class="success-msg">✅ Password reset successful! Please login with your new password.</div>
+
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="post">
+            <div>
+                <label>Username</label>
+                <div class="input-wrap">
+                    <span>👤</span>
+                    <input type="text" name="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+            <div>
+                <label>Password</label>
+                <div class="input-wrap">
+                    <span>🔑</span>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-login">Sign In →</button>
+        </form>
+
+        <!-- Forgot Password -->
+        <a href="/forgot-password" class="back-link" style="margin-top:14px; color:#e8c96e;">🔑 Forgot Password?</a>
+
+        <!-- Register Link (OUTSIDE the form) -->
+        <a href="/register" class="register-btn">🎓 New student? Register here →</a>
+
+        <!-- Back to Home -->
+        <a href="/" class="back-link">← Back to Home</a>
+
+    </div>
+</div>
+
+<div class="footer">© 2026 Sir C R Reddy College for Women · Complaint Management System</div>
+</body>
+</html>
