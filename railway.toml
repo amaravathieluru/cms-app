@@ -4,4 +4,3 @@ buildCommand = "cd cms && ./mvnw clean package -DskipTests"
 
 [deploy]
 startCommand = "java -jar cms/target/*.jar"
-restartPolicyType = "on-failure"
