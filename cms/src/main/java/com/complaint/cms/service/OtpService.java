@@ -1,34 +1,51 @@
 package com.complaint.cms.service;
 
+import com.complaint.cms.model.OtpToken;
+import com.complaint.cms.repository.OtpTokenRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
 public class OtpService {
 
-    // Stores email -> OTP
-    private final Map<String, String> otpStore = new HashMap<>();
+    @Autowired
+    private OtpTokenRepository otpTokenRepository;
 
-    // Generate and store a 6-digit OTP for the given email
+    @Transactional
     public String generateOtp(String email) {
+        // Delete any existing OTP for this email
+        otpTokenRepository.deleteByEmail(email);
+
+        // Generate new 6-digit OTP
         String otp = String.format("%06d", new Random().nextInt(999999));
-        otpStore.put(email, otp);
+
+        // Save to database
+        OtpToken token = new OtpToken(email, otp);
+        otpTokenRepository.save(token);
+
         return otp;
     }
 
-    // Verify OTP for the given email
     public boolean verifyOtp(String email, String otp) {
-        String stored = otpStore.get(email);
-        if (stored != null && stored.equals(otp)) {
-            return true;
+        Optional<OtpToken> token = otpTokenRepository.findByEmail(email);
+
+        if (token.isEmpty()) return false;
+
+        // Check if expired
+        if (LocalDateTime.now().isAfter(token.get().getExpiryTime())) {
+            otpTokenRepository.deleteByEmail(email);
+            return false;
         }
-        return false;
+
+        return token.get().getOtp().equals(otp);
     }
 
-    // Clear OTP after successful use
+    @Transactional
     public void clearOtp(String email) {
-        otpStore.remove(email);
+        otpTokenRepository.deleteByEmail(email);
     }
 }
