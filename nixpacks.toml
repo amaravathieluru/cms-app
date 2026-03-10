@@ -1,5 +1,0 @@
-[phases.build]
-cmds = ["cd cms && ./mvnw clean package -DskipTests"]
-
-[start]
-cmd = "java -jar cms/target/*.jar"
